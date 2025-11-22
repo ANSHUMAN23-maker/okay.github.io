@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS Emulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+        h1 {
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+        }
+        .game-selector {
+            margin-bottom: 20px;
+            padding: 15px 25px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        select {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background: #2a2a4a;
+            color: #fff;
+            cursor: pointer;
+            min-width: 250px;
+        }
+        select:hover {
+            background: #3a3a5a;
+        }
+        #load-btn {
+            margin-left: 10px;
+            padding: 10px 25px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #load-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .emulator-container {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        desmond-player {
+            display: block;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #status {
+            margin-top: 15px;
+            padding: 10px;
+            text-align: center;
+            color: #aaa;
+        }
+        .error {
+            color: #ff6b6b !important;
+        }
+        .success {
+            color: #51cf66 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 DS Emulator</h1>
+    
+    <div class="game-selector">
+        <select id="game-select">
+            <option value="">-- Select a Game --</option>
+            <!-- Add your games here. The value should be the path relative to index.html -->
+            <option value="games/game1.nds">Game 1</option>
+            <option value="games/game2.nds">Game 2</option>
+            <option value="games/game3.nds">Game 3</option>
+            <!-- Example: If your game is at /games/Pokemon.nds -->
+            <!-- <option value="games/Pokemon.nds">Pokemon</option> -->
+        </select>
+        <button id="load-btn">Load Game</button>
+    </div>
+    
+    <div class="emulator-container">
+        <desmond-player id="player"></desmond-player>
+    </div>
+    
+    <div id="status">Select a game and click "Load Game" to start</div>
+
+    <!-- IMPORTANT: desmond.min.js MUST be loaded BEFORE the game loading script -->
+    <script src="desmond.min.js"></script>
+    
+    <script>
+        const player = document.getElementById('player');
+        const gameSelect = document.getElementById('game-select');
+        const loadBtn = document.getElementById('load-btn');
+        const status = document.getElementById('status');
+
+        loadBtn.addEventListener('click', function() {
+            const gamePath = gameSelect.value;
+            
+            if (!gamePath) {
+                status.textContent = '⚠️ Please select a game first!';
+                status.className = 'error';
+                return;
+            }
+            
+            status.textContent = '⏳ Loading game...';
+            status.className = '';
+            
+            // Check if the file exists first (optional but helpful for debugging)
+            fetch(gamePath, { method: 'HEAD' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Game file not found: ${gamePath}`);
+                    }
+                    
+                    // Load the game using Desmond's loadURL method
+                    player.loadURL(gamePath, function() {
+                        status.textContent = '✅ Game loaded successfully!';
+                        status.className = 'success';
+                        
+                        // Optional: Enable microphone if needed
+                        // player.enableMicrophone();
+                    });
+                })
+                .catch(error => {
+                    status.textContent = '❌ Error: ' + error.message;
+                    status.className = 'error';
+                    console.error('Failed to load game:', error);
+                });
+        });
+    </script>
+</body>
+</html>
